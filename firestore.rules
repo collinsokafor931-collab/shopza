@@ -1,0 +1,200 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Admins check (matches runtime owner or explicit admin record)
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'collinsokafor931@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // User Validation
+    function isValidUser(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.email is string && data.email.size() <= 256 &&
+             data.name is string && data.name.size() <= 128 &&
+             data.role in ['buyer', 'seller', 'admin'] &&
+             data.isSeller is bool;
+    }
+
+    // Store Validation
+    function isValidStore(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 128 &&
+             data.username is string && data.username.size() <= 64 &&
+             data.ownerId == request.auth.uid;
+    }
+
+    // Product Validation
+    function isValidProduct(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.price is number && data.price >= 0 &&
+             data.sellerId == request.auth.uid &&
+             data.stock is number && data.stock >= 0 &&
+             data.status in ['published', 'draft', 'paused', 'sold_out'];
+    }
+
+    // Order Validation
+    function isValidOrder(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.orderNumber is string && data.orderNumber.size() <= 64 &&
+             data.buyerId == request.auth.uid &&
+             data.total is number && data.total >= 0 &&
+             data.items is list && data.items.size() > 0 && data.items.size() <= 100;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(incoming()) && incoming().id == existing().id;
+      allow delete: if isAdmin();
+    }
+
+    // Stores Collection
+    match /stores/{storeId} {
+      allow get, list: if true; // Public storefront directory
+      allow create: if isSignedIn() && isValidId(storeId) && isValidStore(incoming());
+      allow update: if isSignedIn() && (existing().ownerId == request.auth.uid || isAdmin()) && isValidStore(incoming());
+      allow delete: if isSignedIn() && (existing().ownerId == request.auth.uid || isAdmin());
+    }
+
+    // Products Collection
+    match /products/{productId} {
+      allow get, list: if true; // Public catalog discovery
+      allow create: if isSignedIn() && isValidId(productId) && isValidProduct(incoming());
+      allow update: if isSignedIn() && (existing().sellerId == request.auth.uid || isAdmin()) && isValidProduct(incoming());
+      allow delete: if isSignedIn() && (existing().sellerId == request.auth.uid || isAdmin());
+    }
+
+    // Orders Collection
+    match /orders/{orderId} {
+      allow get: if isSignedIn() && (
+        resource.data.buyerId == request.auth.uid ||
+        request.auth.uid in resource.data.sellerIds ||
+        isAdmin()
+      );
+      allow list: if isSignedIn() && (
+        resource.data.buyerId == request.auth.uid ||
+        request.auth.uid in resource.data.sellerIds ||
+        isAdmin()
+      );
+      allow create: if isSignedIn() && isValidId(orderId) && isValidOrder(incoming());
+      allow update: if isSignedIn() && (
+        resource.data.buyerId == request.auth.uid ||
+        request.auth.uid in resource.data.sellerIds ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Discounts Collection
+    match /discounts/{discountId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn() && (incoming().storeId == request.auth.uid || isAdmin());
+    }
+
+    // Customers CRM Collection
+    match /customers/{customerId} {
+      allow read, write: if isSignedIn() && (
+        resource == null || resource.data.storeId == request.auth.uid || isAdmin()
+      );
+    }
+
+    // Cloud-synced Wishlists Collection
+    match /wishlists/{userId} {
+      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Reviews Collection (Public Feed, Authored by Real Users)
+    match /reviews/{reviewId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // Conversations Collection (Chat)
+    match /conversations/{conversationId} {
+      allow get, list: if isSignedIn() && (
+        resource == null ||
+        request.auth.uid in resource.data.participantIds ||
+        isAdmin()
+      );
+      allow create: if isSignedIn() && request.auth.uid in incoming().participantIds;
+      allow update: if isSignedIn() && (
+        request.auth.uid in resource.data.participantIds ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Messages Collection
+    match /messages/{messageId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && incoming().senderId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // Notifications Collection
+    match /notifications/{notificationId} {
+      allow get, list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Services Collection
+    match /services/{serviceId} {
+      allow get, list: if true;
+      allow create, update, delete: if isSignedIn() && (incoming().sellerId == request.auth.uid || isAdmin());
+    }
+
+    // Transactions & Withdrawals
+    match /transactions/{transactionId} {
+      allow get, list: if isSignedIn() && (resource.data.sellerId == request.auth.uid || isAdmin());
+      allow create, update: if isAdmin();
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow get, list: if isSignedIn() && (resource.data.sellerId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && incoming().sellerId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Reports Collection
+    match /reports/{reportId} {
+      allow get, list: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+  }
+}

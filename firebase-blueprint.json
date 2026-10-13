@@ -1,0 +1,173 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "User profile document containing account and role information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "name": { "type": "string", "maxLength": 128 },
+        "avatar": { "type": "string", "maxLength": 1024 },
+        "role": { "type": "string", "enum": ["buyer", "seller", "admin"] },
+        "isSeller": { "type": "boolean" },
+        "storeUsername": { "type": "string", "maxLength": 64 },
+        "location": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "email", "name", "role", "isSeller", "createdAt"]
+    },
+    "store": {
+      "title": "Store",
+      "description": "Merchant storefront with Shopify-grade branding and theme customization",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "storeId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "normalizedName": { "type": "string", "maxLength": 128 },
+        "username": { "type": "string", "maxLength": 64 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "ownerEmail": { "type": "string", "maxLength": 256 },
+        "ownerName": { "type": "string", "maxLength": 128 },
+        "logo": { "type": "string", "maxLength": 1024 },
+        "logoUrl": { "type": "string", "maxLength": 1024 },
+        "banner": { "type": "string", "maxLength": 1024 },
+        "bannerUrl": { "type": "string", "maxLength": 1024 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "categories": { "type": "array" },
+        "category": { "type": "string", "maxLength": 64 },
+        "location": { "type": "string", "maxLength": 128 },
+        "state": { "type": "string", "maxLength": 64 },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "followerCount": { "type": "number" },
+        "isVerified": { "type": "boolean" },
+        "verificationStatus": { "type": "string", "enum": ["unverified", "pending", "verified", "rejected"] },
+        "status": { "type": "string", "enum": ["pending", "open", "closed", "suspended"] },
+        "isPublic": { "type": "boolean" },
+        "themeSettings": { "type": "object" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "username", "ownerId", "status", "isPublic", "createdAt"]
+    },
+    "product": {
+      "title": "Product",
+      "description": "Product listing with multi-option variant matrix, inventory tracking, and SKU",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "slug": { "type": "string", "maxLength": 250 },
+        "description": { "type": "string", "maxLength": 5000 },
+        "price": { "type": "number" },
+        "compareAtPrice": { "type": "number" },
+        "category": { "type": "string", "maxLength": 64 },
+        "categorySlug": { "type": "string", "maxLength": 64 },
+        "condition": { "type": "string", "maxLength": 32 },
+        "images": { "type": "array" },
+        "sellerId": { "type": "string", "maxLength": 128 },
+        "sellerName": { "type": "string", "maxLength": 128 },
+        "storeUsername": { "type": "string", "maxLength": 64 },
+        "stock": { "type": "number" },
+        "sku": { "type": "string", "maxLength": 64 },
+        "barcode": { "type": "string", "maxLength": 64 },
+        "variants": { "type": "array" },
+        "options": { "type": "array" },
+        "tags": { "type": "array" },
+        "status": { "type": "string", "enum": ["published", "draft", "paused", "sold_out"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "title", "price", "sellerId", "storeUsername", "stock", "status", "createdAt"]
+    },
+    "order": {
+      "title": "Order",
+      "description": "Customer purchase transaction record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "orderNumber": { "type": "string", "maxLength": 64 },
+        "buyerId": { "type": "string", "maxLength": 128 },
+        "buyerName": { "type": "string", "maxLength": 128 },
+        "buyerEmail": { "type": "string", "maxLength": 256 },
+        "sellerIds": { "type": "array" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "deliveryFee": { "type": "number" },
+        "discount": { "type": "number" },
+        "total": { "type": "number" },
+        "status": { "type": "string", "maxLength": 32 },
+        "shippingAddress": { "type": "object" },
+        "paymentMethod": { "type": "string", "maxLength": 32 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "orderNumber", "buyerId", "buyerEmail", "sellerIds", "items", "total", "status", "createdAt"]
+    },
+    "discount": {
+      "title": "Discount",
+      "description": "Shopify-grade promo code engine with usage limits and discount types",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "code": { "type": "string", "maxLength": 32 },
+        "type": { "type": "string", "enum": ["percentage", "fixed_amount", "free_shipping"] },
+        "value": { "type": "number" },
+        "minOrderValue": { "type": "number" },
+        "usageLimit": { "type": "number" },
+        "usedCount": { "type": "number" },
+        "active": { "type": "boolean" },
+        "storeId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "code", "type", "value", "active", "createdAt"]
+    },
+    "customer": {
+      "title": "Customer",
+      "description": "Store customer CRM record with lifetime value, notes, and tags",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "storeId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "totalOrders": { "type": "number" },
+        "totalSpend": { "type": "number" },
+        "tags": { "type": "array" },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "storeId", "name", "email", "totalOrders", "totalSpend", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "Collection of user profile accounts"
+    },
+    "/stores/{storeId}": {
+      "schema": "store",
+      "description": "Collection of merchant storefront configurations"
+    },
+    "/products/{productId}": {
+      "schema": "product",
+      "description": "Collection of catalog products with variant matrices"
+    },
+    "/orders/{orderId}": {
+      "schema": "order",
+      "description": "Collection of checkout orders"
+    },
+    "/discounts/{discountId}": {
+      "schema": "discount",
+      "description": "Collection of store discount promo codes"
+    },
+    "/customers/{customerId}": {
+      "schema": "customer",
+      "description": "Collection of merchant customer CRM profiles"
+    }
+  }
+}

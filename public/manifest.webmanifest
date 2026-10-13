@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "SHOPZA — Marketplace",
+  "short_name": "SHOPZA",
+  "description": "The premier modern mobile-first marketplace and PWA. Buy, sell, and discover.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#5B35F5",
+  "background_color": "#0B0B0F",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["shopping", "business", "lifestyle"]
+}

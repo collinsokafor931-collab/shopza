@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5B35F5" />
+      <stop offset="100%" stop-color="#7C4DFF" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00C896" />
+      <stop offset="100%" stop-color="#05E2AA" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="#0B0B0F" />
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="2" />
+  <!-- Abstract SHOPZA Monogram Mark -->
+  <path d="M156 180 C 156 140, 192 108, 256 108 C 320 108, 356 140, 356 176 C 356 220, 308 238, 256 256 C 204 274, 156 296, 156 340 C 156 384, 196 404, 256 404 C 324 404, 356 370, 356 332" 
+        fill="none" stroke="url(#brandGrad)" stroke-width="48" stroke-linecap="round" />
+  <circle cx="356" cy="176" r="24" fill="url(#accentGrad)" />
+  <circle cx="156" cy="340" r="24" fill="url(#accentGrad)" />
+  <circle cx="256" cy="256" r="16" fill="#FFFFFF" />
+</svg>

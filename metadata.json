@@ -1,0 +1,8 @@
+{
+  "name": "SHOPZA — Buy. Sell. Discover.",
+  "description": "Production commerce platform and PWA featuring Shopify-grade merchant tools, POS terminal, theme customizer, product variants, customer CRM, promo codes, and secure Gmail authentication.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
